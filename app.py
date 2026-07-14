@@ -168,14 +168,14 @@ def api_get_status():
         'is_scraping': is_scraping
     })
 
+# Khởi tạo Database và chạy Thread cào tin ngầm trực tiếp khi khởi động ứng dụng (giúp hoạt động trên Gunicorn/Render)
+init_db()
+
+t = threading.Thread(target=run_background_scraper, daemon=True)
+t.start()
+
 if __name__ == '__main__':
-    # 1. Khởi tạo Database
-    init_db()
-    
-    # 2. Chạy Thread cào tin ngầm
-    t = threading.Thread(target=run_background_scraper, daemon=True)
-    t.start()
-    
-    # 3. Khởi chạy Flask Server
-    print("Khoi dong may chu web tai http://127.0.0.1:5000")
-    app.run(host='127.0.0.1', port=5000, debug=True, use_reloader=False)
+    # Khởi chạy Flask Server cục bộ
+    port = int(os.environ.get('PORT', 5000))
+    print(f"Khoi dong may chu web tai http://0.0.0.0:{port}")
+    app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False)
