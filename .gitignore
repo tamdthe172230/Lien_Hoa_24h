@@ -1,0 +1,22 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# SQLite local database
+data/
+*.db
+*.db-journal
+
+# Windows startup script (not needed on Linux server deployment)
+run_lienhoa24h.bat
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# OS generated files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LienHoa24h - Cổng Tổng Hợp Tin Tức Phường Liên Hòa</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside>
+            <div class="logo-container">
+                <div class="logo-icon">LH</div>
+                <div class="logo-text">
+                    <h1>LienHoa24h</h1>
+                    <p>News Aggregator</p>
+                </div>
+            </div>
+
+            <!-- Categories Filter -->
+            <div class="menu-section">
+                <h2 class="menu-title">Chuyên Mục</h2>
+                <ul class="menu-list" id="category-list">
+                    <li class="menu-item active" data-category="">
+                        <button>📂 Tất cả tin tức</button>
+                    </li>
+                    <li class="menu-item" data-category="Chính trị - Hành chính">
+                        <button>🏛️ Chính trị - Hành chính</button>
+                    </li>
+                    <li class="menu-item" data-category="Kinh tế - Đầu tư">
+                        <button>💼 Kinh tế - Đầu tư</button>
+                    </li>
+                    <li class="menu-item" data-category="Đầu tư - Hạ tầng">
+                        <button>🏗️ Đầu tư - Hạ tầng</button>
+                    </li>
+                    <li class="menu-item" data-category="Văn hóa - Xã hội">
+                        <button>⛩️ Văn hóa - Xã hội</button>
+                    </li>
+                    <li class="menu-item" data-category="Đời sống dân sinh">
+                        <button>🏥 Đời sống dân sinh</button>
+                    </li>
+                    <li class="menu-item" data-category="Khác">
+                        <button>🏷️ Chuyên mục khác</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Source Filter -->
+            <div class="menu-section">
+                <h2 class="menu-title">Nguồn Tin</h2>
+                <ul class="menu-list" id="source-list">
+                    <li class="menu-item active" data-source="">
+                        <button>📰 Tất cả nguồn</button>
+                    </li>
+                    <li class="menu-item" data-source="Báo Quảng Ninh">
+                        <button>🌐 Báo Quảng Ninh</button>
+                    </li>
+                    <li class="menu-item" data-source="Báo Nhân Dân">
+                        <button>🇨🇳 Báo Nhân Dân</button>
+                    </li>
+                    <li class="menu-item" data-source="Cổng TTĐT Quảng Ninh">
+                        <button>🏛️ Cổng TTĐT Quảng Ninh</button>
+                    </li>
+                    <li class="menu-item" data-source="Cổng TTĐT Quảng Yên">
+                        <button>🏡 Cổng TTĐT Quảng Yên</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Configuration Card -->
+            <div class="config-card">
+                <h4>⚙️ Cấu hình AI</h4>
+                <p style="font-size: 0.75rem; color: var(--text-secondary);">Nhập Gemini API Key để kích hoạt tóm tắt & phân tích thông minh:</p>
+                <input type="password" id="gemini-key" placeholder="Nhập API Key ở đây...">
+                <p style="font-size: 0.7rem; color: var(--text-muted); font-style: italic;">* Khóa sẽ được lưu cục bộ trên trình duyệt của bạn.</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main>
+            <!-- Header -->
+            <header>
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="Tìm kiếm tin bài về Liên Hòa...">
+                </div>
+                <div class="header-actions">
+                    <button class="btn" id="btn-scrape">
+                        🔄 Cập nhật tin tức mới
+                    </button>
+                </div>
+            </header>
+
+            <!-- Stats Bar -->
+            <section class="stats-container">
+                <div class="stat-card">
+                    <span class="stat-label">Tổng bài viết thu thập</span>
+                    <span class="stat-value" id="stat-total">0</span>
+                    <span class="stat-desc">Đã cập nhật tự động</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Chuyên mục nổi bật</span>
+                    <span class="stat-value" id="stat-top-category">-</span>
+                    <span class="stat-desc" id="stat-top-count">0 bài viết</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Nguồn tin đa dạng</span>
+                    <span class="stat-value" id="stat-sources-count">4</span>
+                    <span class="stat-desc">Trang báo chính thống</span>
+                </div>
+            </section>
+
+            <!-- Content Grid -->
+            <div class="content-grid">
+                <!-- News Feed -->
+                <section class="news-feed-section">
+                    <div class="news-header">
+                        <h2>📰 Dòng Tin Liên Hòa 24h</h2>
+                    </div>
+                    
+                    <div class="articles-wrapper" id="articles-container">
+                        <!-- Articles will be rendered here dynamically -->
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container">
+                        <button class="btn btn-secondary" id="btn-prev-page" disabled>◀ Trước</button>
+                        <span class="page-info" id="page-info">Trang 1 / 1</span>
+                        <button class="btn btn-secondary" id="btn-next-page" disabled>Sau ▶</button>
+                    </div>
+                </section>
+
+                <!-- Sidebar Widgets -->
+                <section class="widgets-container">
+                    <!-- Category Stats Chart (SVG/CSS Custom Layout) -->
+                    <div class="widget-card">
+                        <h3>📊 Phân bố chủ đề tin tức</h3>
+                        <div class="chart-box" id="chart-container">
+                            <!-- Chart bars will be injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Dòng thời gian sự kiện (Timeline) -->
+                    <div class="widget-card">
+                        <h3>⏳ Sự kiện mới nhất</h3>
+                        <div class="timeline-list" id="timeline-container">
+                            <!-- Timeline nodes will be injected here -->
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loading-text">Đang quét nguồn tin và xử lý AI...</div>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Quá trình này có thể mất một vài giây.</p>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
