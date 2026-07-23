@@ -92,7 +92,7 @@ def load_mock_data():
             inserted_count += 1
     return inserted_count
 
-def scrape_nhandan(keyword="Liên Hòa Quảng Ninh"):
+def scrape_nhandan(keyword="Quảng Ninh"):
     """Cào tin tức từ trang tìm kiếm Báo Nhân Dân."""
     articles = []
     query = urllib.parse.quote(keyword)
@@ -326,8 +326,8 @@ def scrape_and_save_all():
     # 1. Cào dữ liệu thực tế trước
     scraped_articles = []
     
-    # Cào báo Nhân Dân (Dùng từ khóa riêng "Liên Hòa Quảng Ninh" để tránh nhầm với xã Liên Hòa - Phú Thọ)
-    nhandan_news = scrape_nhandan("Liên Hòa Quảng Ninh")
+    # Cào báo Nhân Dân (Dùng từ khóa riêng "Quảng Ninh" rồi lọc lại từ khóa "Liên Hòa")
+    nhandan_news = scrape_nhandan("Quảng Ninh")
     scraped_articles.extend(nhandan_news)
     print(f"Cao bao Nhan Dan thanh cong: tim thay {len(nhandan_news)} bai viet phu hop.")
     
