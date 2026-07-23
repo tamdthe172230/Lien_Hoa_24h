@@ -20,20 +20,30 @@ def fallback_processing(title, content):
     if len(summary) > 200:
         summary = summary[:197] + "..."
 
-    # 2. Phân loại chuyên mục theo từ khóa
+    # 2. Phân loại chuyên mục theo tần suất từ khóa (Scoring Algorithm)
     full_text = (title + " " + content).lower()
     
-    category = "Khác"
-    if any(k in full_text for k in ["chính quyền", "ubnd", "cán bộ", "đảng", "hội nghị", "bí thư", "chủ tịch", "hành chính"]):
-        category = "Chính trị - Hành chính"
-    elif any(k in full_text for k in ["thủy sản", "doanh nghiệp", "nuôi trồng", "sản xuất", "kinh doanh", "thu nhập", "hộ dân"]):
-        category = "Kinh tế - Đầu tư"
-    elif any(k in full_text for k in ["đê biển", "nâng cấp", "xây dựng", "dự án", "hạ tầng", "giao thông", "tuyến đường"]):
-        category = "Đầu tư - Hạ tầng"
-    elif any(k in full_text for k in ["lễ hội", "đền tiên công", "tiên công", "văn hóa", "lễ rước", "du lịch", "di tích"]):
-        category = "Văn hóa - Xã hội"
-    elif any(k in full_text for k in ["y tế", "dịch bệnh", "môi trường", "rác thải", "phun thuốc", "sức khỏe", "sinh hoạt"]):
-        category = "Đời sống dân sinh"
+    category_keywords = {
+        "Chính trị - Hành chính": ["chính quyền", "ubnd", "cán bộ", "đảng", "hội nghị", "bí thư", "chủ tịch", "hành chính", "chỉ thị", "bầu cử", "hđnd"],
+        "Kinh tế - Đầu tư": ["thủy sản", "doanh nghiệp", "nuôi trồng", "sản xuất", "kinh doanh", "thu nhập", "hộ dân", "hợp tác xã", "tài chính", "thương mại"],
+        "Đầu tư - Hạ tầng": ["đê biển", "nâng cấp", "xây dựng", "dự án", "hạ tầng", "giao thông", "tuyến đường", "bê tông", "thi công", "san lấp", "cầu"],
+        "Văn hóa - Xã hội": ["lễ hội", "đền tiên công", "tiên công", "văn hóa", "lễ rước", "du lịch", "di tích", "lịch sử", "đình quỳnh biểu", "thượng thọ"],
+        "Đời sống dân sinh": ["y tế", "dịch bệnh", "môi trường", "rác thải", "phun thuốc", "sức khỏe", "sinh hoạt", "nghèo", "nhà nhân đạo", "khó khăn", "việc làm"]
+    }
+    
+    scores = {}
+    for cat, keywords in category_keywords.items():
+        score = sum(1 for kw in keywords if kw in full_text)
+        scores[cat] = score
+        
+    max_cat = "Khác"
+    max_score = 0
+    for cat, score in scores.items():
+        if score > max_score:
+            max_score = score
+            max_cat = cat
+            
+    category = max_cat
 
     # 3. Phân tích sắc thái cơ bản
     sentiment = "Trung lập"
