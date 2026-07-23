@@ -54,8 +54,8 @@ MOCK_ARTICLES = [
     },
     {
         "title": "Công tác phòng chống dịch bệnh mùa hè và vệ sinh môi trường tại Liên Hòa",
-        "url": "https://quangyen.gov.vn/cong-tac-phong-chong-dich-benh-mua-he-tai-lien-hoa-328844.html",
-        "source": "Cổng TTĐT Quảng Yên",
+        "url": "https://quangninh.gov.vn/cong-tac-phong-chong-dich-benh-mua-he-tai-lien-hoa-328844.html",
+        "source": "Cổng TTĐT Quảng Ninh",
         "publish_date": "2026-06-18",
         "summary": "Trạm Y tế phường Liên Hòa phối hợp với các đoàn thể tổ chức chiến dịch ra quân phun thuốc phòng dịch bệnh và dọn dẹp vệ sinh môi trường thôn xóm.",
         "category": "Đời sống dân sinh",
