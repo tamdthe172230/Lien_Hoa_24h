@@ -171,7 +171,7 @@ def scrape_quangninh_portal(keyword="Liên Hòa"):
             result_div = soup.find('div', class_='search-result')
             if result_div:
                 items = result_div.find_all('li')
-                for item in items[:15]: # Lấy tối đa 15 bài đầu tiên
+                for item in items[:10]: # Lấy tối đa 10 bài đầu tiên
                     link_tag = item.find('a')
                     if not link_tag or not link_tag.get('href'):
                         continue
@@ -240,7 +240,7 @@ def scrape_baoquangninh(keyword="Liên Hòa"):
             # Cấu trúc thực tế: tìm các thẻ div.card-content
             items = soup.find_all('div', class_='card-content')
             
-            for item in items[:15]: # Lấy 15 bài đầu tiên
+            for item in items[:10]: # Lấy 10 bài đầu tiên
                 title_tag = item.find('h3', class_='card-title')
                 if not title_tag:
                     continue
