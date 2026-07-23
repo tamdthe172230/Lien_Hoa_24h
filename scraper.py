@@ -34,8 +34,8 @@ MOCK_ARTICLES = [
     },
     {
         "title": "Phường Liên Hòa đẩy mạnh nuôi trồng thủy sản bền vững gắn với bảo vệ môi trường",
-        "url": "https://nhandan.vn/phuong-lien-hoa-day-manh-nuoi-trong-thuy-san-ben-vung-322654.html",
-        "source": "Báo Nhân Dân",
+        "url": "https://baoquangninh.vn/phuong-lien-hoa-day-manh-nuoi-trong-thuy-san-ben-vung-322654.html",
+        "source": "Báo Quảng Ninh",
         "publish_date": "2026-04-10",
         "summary": "Phường Liên Hòa tích cực chuyển đổi từ nuôi trồng thủy sản truyền thống sang bán công nghiệp ứng dụng công nghệ cao, bảo vệ đê điều và môi trường nước sông ngòi.",
         "category": "Kinh tế - Đầu tư",
@@ -321,17 +321,9 @@ def scrape_article_detail(url):
 
 def scrape_and_save_all():
     """Tiến hành cào tin tức từ mọi nguồn và lưu vào cơ sở dữ liệu."""
-    print("Bat dau tien trinh cao du lieu...")
-    
-    # 1. Cào dữ liệu thực tế trước
     scraped_articles = []
     
-    # Cào báo Nhân Dân (Dùng từ khóa riêng "Quảng Ninh" rồi lọc lại từ khóa "Liên Hòa")
-    nhandan_news = scrape_nhandan("Quảng Ninh")
-    scraped_articles.extend(nhandan_news)
-    print(f"Cao bao Nhan Dan thanh cong: tim thay {len(nhandan_news)} bai viet phu hop.")
-    
-    # Cào báo Quảng Ninh
+    # 1. Cào báo Quảng Ninh
     quangninh_news = scrape_baoquangninh("Liên Hòa")
     scraped_articles.extend(quangninh_news)
     print(f"Cao bao Quang Ninh thanh cong: tim thay {len(quangninh_news)} bai viet phu hop.")
