@@ -92,7 +92,7 @@ def load_mock_data():
             inserted_count += 1
     return inserted_count
 
-def scrape_nhandan(keyword="Liên Hòa Quảng Yên"):
+def scrape_nhandan(keyword="Liên Hòa"):
     """Cào tin tức từ trang tìm kiếm Báo Nhân Dân."""
     articles = []
     query = urllib.parse.quote(keyword)
@@ -103,7 +103,6 @@ def scrape_nhandan(keyword="Liên Hòa Quảng Yên"):
         if response.status_code == 200:
             soup = BeautifulSoup(response.content, 'html.parser')
             # Cấu trúc HTML tìm kiếm của Báo Nhân Dân thường là các class chứa story hoặc box-news
-            # Chúng ta sẽ tìm kiếm các thẻ tin tức chứa từ khóa
             items = soup.find_all(['article', 'div'], class_=re.compile(r'(story|box-news|item-news|news)'))
             
             for item in items[:10]: # Lấy tối đa 10 tin tức
@@ -112,31 +111,45 @@ def scrape_nhandan(keyword="Liên Hòa Quảng Yên"):
                     continue
                     
                 title_tag = item.find(['h3', 'h4', 'h2']) or link_tag
-                title = title_tag.get_text(strip=True)
+                title = title_tag.get_text(separator=' ', strip=True)
+                title = re.sub(r'\s+', ' ', title)
                 
-                # Báo Nhân Dân có thể chứa bài báo thuộc vùng khác, ta lọc sơ bộ tiêu đề hoặc tóm tắt có chữ liên quan đến Quảng Yên/Quảng Ninh/Liên Hòa
                 if not title:
                     continue
                     
                 article_url = link_tag['href']
+                if any(article_url.startswith(x) for x in ['tel:', 'mailto:', 'javascript:']):
+                    continue
                 if not article_url.startswith('http'):
                     article_url = "https://nhandan.vn" + article_url
                 
                 # Trích xuất phần mô tả ngắn (nếu có)
                 summary_tag = item.find(['div', 'p'], class_=re.compile(r'(summary|sapo|desc)'))
-                summary = summary_tag.get_text(strip=True) if summary_tag else ""
+                summary = summary_tag.get_text(separator=' ', strip=True) if summary_tag else ""
+                summary = re.sub(r'\s+', ' ', summary)
+                
+                # Lấy ngày đăng bài viết
+                date_str = datetime.now().strftime("%Y-%m-%d")
+                time_tag = item.find(['span', 'div', 'p'], class_=re.compile(r'(date|time|meta)'))
+                if time_tag:
+                    time_text = time_tag.get_text(strip=True)
+                    match = re.search(r'(\d{2})/(\d{2})/(\d{4})', time_text)
+                    if match:
+                        day, month, year = match.groups()
+                        date_str = f"{year}-{month}-{day}"
                 
                 # Lấy nội dung chi tiết bài viết
                 content = scrape_article_detail(article_url)
                 
-                # Kiểm tra xem bài viết có thực sự liên quan tới Quảng Yên / Liên Hòa không
-                full_text = (title + " " + summary + " " + (content or "")).lower()
-                if "quảng yên" in full_text or "quảng ninh" in full_text:
+                # Kiểm tra độ tương quan không dấu
+                full_text = (title + " " + summary + " " + (content or ""))
+                full_text_clean = remove_accents(full_text).lower()
+                if "lien hoa" in full_text_clean:
                     articles.append({
                         "title": title,
                         "url": article_url,
                         "source": "Báo Nhân Dân",
-                        "publish_date": datetime.now().strftime("%Y-%m-%d"), # Mặc định ngày hôm nay nếu không lấy được
+                        "publish_date": date_str,
                         "summary": summary,
                         "content": content
                     })
@@ -144,6 +157,75 @@ def scrape_nhandan(keyword="Liên Hòa Quảng Yên"):
         print(f"Loi cao bao Nhan Dan: {e}")
         
     return articles
+
+def scrape_quangninh_portal(keyword="Liên Hòa"):
+    """Cào tin tức từ Cổng thông tin điện tử tỉnh Quảng Ninh (quangninh.gov.vn)."""
+    articles = []
+    query = urllib.parse.quote(keyword)
+    url = f"https://www.quangninh.gov.vn/Trang/searchqnp.aspx?k={query}"
+    
+    try:
+        response = requests.get(url, headers=HEADERS, timeout=10)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            result_div = soup.find('div', class_='search-result')
+            if result_div:
+                items = result_div.find_all('li')
+                for item in items[:15]: # Lấy tối đa 15 bài đầu tiên
+                    link_tag = item.find('a')
+                    if not link_tag or not link_tag.get('href'):
+                        continue
+                        
+                    article_url = link_tag['href']
+                    if not article_url.startswith('http'):
+                        article_url = "https://www.quangninh.gov.vn" + article_url
+                        
+                    box_content = item.find('div', class_='box-content')
+                    if not box_content:
+                        continue
+                        
+                    # Lấy tiêu đề
+                    title_tag = box_content.find('h3')
+                    if not title_tag:
+                        continue
+                    title = title_tag.get_text(separator=' ', strip=True)
+                    title = re.sub(r'\s+', ' ', title)
+                    
+                    # Lấy mô tả ngắn
+                    desc_tag = box_content.find('div', style=lambda s: s and 'padding-bottom' in s)
+                    summary = desc_tag.get_text(separator=' ', strip=True) if desc_tag else ""
+                    summary = re.sub(r'\s+', ' ', summary)
+                    
+                    # Lấy ngày đăng (định dạng dd/mm/yyyy hh:mm:ss SA/CH)
+                    time_tag = box_content.find('p')
+                    date_str = datetime.now().strftime("%Y-%m-%d")
+                    if time_tag:
+                        time_text = time_tag.get_text(strip=True)
+                        match = re.search(r'(\d{2})/(\d{2})/(\d{4})', time_text)
+                        if match:
+                            day, month, year = match.groups()
+                            date_str = f"{year}-{month}-{day}"
+                            
+                    # Cào nội dung chi tiết bài viết
+                    content = scrape_article_detail(article_url)
+                    
+                    # Kiểm tra độ tương quan không dấu
+                    full_text = (title + " " + summary + " " + (content or ""))
+                    full_text_clean = remove_accents(full_text).lower()
+                    if "lien hoa" in full_text_clean:
+                        articles.append({
+                            "title": title,
+                            "url": article_url,
+                            "source": "Cổng TTĐT Quảng Ninh",
+                            "publish_date": date_str,
+                            "summary": summary,
+                            "content": content
+                        })
+    except Exception as e:
+        print(f"Loi cao Cong TTDT Quang Ninh: {e}")
+        
+    return articles
+
 
 def scrape_baoquangninh(keyword="Liên Hòa"):
     """Cào tin tức từ trang tìm kiếm Báo Quảng Ninh."""
@@ -244,15 +326,20 @@ def scrape_and_save_all():
     # 1. Cào dữ liệu thực tế trước
     scraped_articles = []
     
-    # Cào báo Nhân Dân (Tạm thời vô hiệu hóa theo yêu cầu tập trung vào Báo Quảng Ninh)
-    # nhandan_news = scrape_nhandan("Liên Hòa Quảng Yên")
-    # scraped_articles.extend(nhandan_news)
-    # print(f"Cao bao Nhan Dan thanh cong: tim thay {len(nhandan_news)} bai viet phu hop.")
+    # Cào báo Nhân Dân
+    nhandan_news = scrape_nhandan("Liên Hòa")
+    scraped_articles.extend(nhandan_news)
+    print(f"Cao bao Nhan Dan thanh cong: tim thay {len(nhandan_news)} bai viet phu hop.")
     
     # Cào báo Quảng Ninh
     quangninh_news = scrape_baoquangninh("Liên Hòa")
     scraped_articles.extend(quangninh_news)
     print(f"Cao bao Quang Ninh thanh cong: tim thay {len(quangninh_news)} bai viet phu hop.")
+    
+    # Cào Cổng TTĐT Quảng Ninh
+    portal_news = scrape_quangninh_portal("Liên Hòa")
+    scraped_articles.extend(portal_news)
+    print(f"Cao Cong TTDT Quang Ninh thanh cong: tim thay {len(portal_news)} bai viet phu hop.")
     
     # 2. Lưu dữ liệu cào thực tế
     real_inserted = 0
